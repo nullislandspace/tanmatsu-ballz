@@ -28,7 +28,7 @@
 #include "modplayer_esp32.h"
 #include "logo_image.h"
 
-#define CAVAC_DEBUG
+//#define CAVAC_DEBUG
 
 // Constants
 //static char const TAG[] = "main";
@@ -172,7 +172,7 @@ void app_main(void) {
     bsp_audio_initialize(SAMPLE_RATE);
     bsp_audio_get_i2s_handle(&i2s_handle);
     bsp_audio_set_amplifier(true);   // Enable amplifier
-    bsp_audio_set_volume(0);       // Set master volume to maximum
+    bsp_audio_set_volume(100);       // Set master volume to maximum
 
     // Initialize active sounds array
     memset(active_sounds, 0, sizeof(active_sounds));
@@ -273,7 +273,7 @@ void app_main(void) {
     pax_buf_set_orientation(&fb, orientation);
 
     // Initialize logo buffer (already pre-rotated in the image data)
-    pax_buf_init(&logo_buf, (void*)logo_image_data, LOGO_WIDTH, LOGO_HEIGHT, PAX_BUF_16_565RGB);
+    pax_buf_init(&logo_buf, (void*)logo_image_data, LOGO_WIDTH, LOGO_HEIGHT, PAX_BUF_24_888RGB);
 
 #if defined(CONFIG_BSP_TARGET_KAMI)
 #define BLACK 0

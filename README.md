@@ -4,7 +4,9 @@ This minimal demo shows how to build an app for Tanmatsu using the [PAX graphics
 
 It is based in the [Template app](https://github.com/Nicolai-Electronics/tanmatsu-template)
 
-For more information visit the [documentation website](https://docs.tanmatsu.cloud).
+This is supposed to run in RGB888 (24 bit per pixel) mode, but this needs some extra step in the build process, because we are using a couple of patched libraries to make that work:
+
+After running "make prepare", you also need to run "make prepare_rgb888"
 
 ## License
 
