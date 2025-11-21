@@ -22,3 +22,5 @@ components/badgeteam__badgelink/
 .vscode
 badgelink
 components/*
+.hg
+.hgignore
