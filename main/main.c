@@ -22,8 +22,6 @@
 #include "pax_gfx.h"
 #include "pax_text.h"
 #include "portmacro.h"
-#include "wifi_connection.h"
-#include "wifi_remote.h"
 #include "bounce_sounds.h"
 #include "modplayer_esp32.h"
 #include "logo_image.h"
