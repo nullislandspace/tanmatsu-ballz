@@ -53,7 +53,7 @@ typedef struct {
 // Global variables
 static size_t                       display_h_res        = 0;
 static size_t                       display_v_res        = 0;
-static lcd_color_rgb_pixel_format_t display_color_format = LCD_COLOR_PIXEL_FORMAT_RGB565;
+static lcd_color_rgb_pixel_format_t display_color_format = LCD_COLOR_PIXEL_FORMAT_RGB888;
 static lcd_rgb_data_endian_t        display_data_endian  = LCD_RGB_DATA_ENDIAN_LITTLE;
 static pax_buf_t                    fb                   = {0};
 static pax_buf_t                    logo_buf             = {0};  // Logo image buffer
@@ -165,7 +165,6 @@ void app_main(void) {
     }
     ESP_ERROR_CHECK(res);
 
-    // Initialize the Board Support Package
     const bsp_configuration_t bsp_configuration = {
         .display =
             {
@@ -173,6 +172,8 @@ void app_main(void) {
                 .num_fbs                = 1,
             },
     };
+
+    // Initialize the Board Support Package
     ESP_ERROR_CHECK(bsp_device_initialize(&bsp_configuration));
 
     // Initialize audio subsystem
@@ -209,10 +210,9 @@ void app_main(void) {
         1                               // Pin to Core 1
     );
 
-    uint8_t led_data[] = {
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    };
-    bsp_led_write(led_data, sizeof(led_data));
+    for (int i = 0; i < 6; i++) bsp_led_set_pixel(i, 0x000000);
+    bsp_led_send();
+    bsp_led_set_mode(false);
 
     // Get display parameters and rotation
     res = bsp_display_get_parameters(&display_h_res, &display_v_res, &display_color_format, &display_data_endian);
@@ -310,14 +310,13 @@ void app_main(void) {
     uint32_t color[5] = {0xFFFF0000, 0xFF00FF00, 0xFFFF00FF, 0xFF00FFFF, 0xFFFFFF00}; // Ball colors
     bool bounce[5] = {false, false, false, false, false}; // Has bounced this render cycle
 
-    uint8_t led_offs[5] = {0 * 3, 1 * 3, 2 * 3, 4 * 3, 5 * 3};  // Starting offset in the led_data for the corresponding balls
-    uint8_t led_colormap[15] = {0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00}; // Color of the balls, split into bytes
+    uint8_t led_idx[5] = {0, 1, 2, 4, 5};  // LED index for each ball
+    uint32_t led_rgb[5] = {0xFF0000, 0x00FF00, 0xFF00FF, 0x00FFFF, 0xFFFF00};  // Ball LED colors (RGB)
 
     // Bounce sound frequencies: 440, 554, 659, 784, 880 Hz (pentatonic scale)
     // Sound samples are pre-generated and loaded from bounce_sounds.h
 
     uint8_t i;
-    uint8_t ledoffs;
     uint32_t delay = pdMS_TO_TICKS(1);  // 1ms timeout for responsive input
     uint8_t bright = 100;
     while(1) {
@@ -340,9 +339,8 @@ void app_main(void) {
         pax_draw_text(&fb, WHITE, pax_font_sky_mono, 16, 20, 100, debugheight); // Tanmatsu: 800
 #endif // CAVAC_DEBUG
 
-        memset(led_data, 0, 18); // LEDS OFF
-        led_data[(3 * 3) + 0] = 0xFF; // Power LED on
-        led_data[(3 * 3) + 1] = 0xFF;
+        for (int j = 0; j < 6; j++) bsp_led_set_pixel(j, 0x000000);  // LEDs off
+        bsp_led_set_pixel(3, 0xFFFF00);  // Power LED on
 
         for(i = 0; i < 5; i++) {
             bounce[i] = false;
@@ -366,15 +364,10 @@ void app_main(void) {
                 pax_draw_circle(&fb, BLACK, yoffs[i] + 25, xoffs[i] + 25, 15);
                 pax_draw_circle(&fb, WHITE, yoffs[i] + 25, xoffs[i] + 25, 10);
 
-                ledoffs = led_offs[i];
-
                 // Trigger bounce sound for this ball
                 sound_trigger[i] = true;
 
-                // For some strange reason, the LED array seems to expect G R B (instead of R G B), so we swap the bytes accordingly
-                led_data[ledoffs + 0] = led_colormap[(i * 3) + 1];
-                led_data[ledoffs + 1] = led_colormap[(i * 3) + 0];
-                led_data[ledoffs + 2] = led_colormap[(i * 3) + 2];
+                bsp_led_set_pixel(led_idx[i], led_rgb[i]);
             }
         }
         bsp_input_set_backlight_brightness(bright);
@@ -382,6 +375,6 @@ void app_main(void) {
             bright -= 25;
         }
         blit();
-        bsp_led_write(led_data, sizeof(led_data));
+        bsp_led_send();
     }
 }
