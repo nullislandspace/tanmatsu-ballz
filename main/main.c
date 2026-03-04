@@ -8,7 +8,6 @@
 #include "bsp/led.h"
 #include "bsp/power.h"
 #include "bsp/audio.h"
-#include "custom_certificates.h"
 #include "driver/gpio.h"
 #include "driver/i2s_std.h"
 #include "esp_lcd_panel_ops.h"
