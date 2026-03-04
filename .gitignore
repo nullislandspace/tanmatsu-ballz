@@ -19,6 +19,7 @@ sdkconfig_*
 REPOLAYOUT.md
 CLAUDE.md
 components/badgeteam__badgelink/
+components/pax-graphics
 .vscode
 badgelink
 components/*
